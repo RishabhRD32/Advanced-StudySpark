@@ -30,7 +30,7 @@ StudySpark is a comprehensive, AI-powered academic workspace designed for both s
 ### 1. Prerequisites
 - Node.js 18.x or later
 - A Firebase Project
-- A Google AI (Gemini) API Key
+- A Google AI (Gemini), OpenAI, Cohere, Mistral, Groq, Cerebras AI API Key
 
 ### 2. Environment Variables
 Create a `.env` file in the root directory and populate it with your credentials:
@@ -46,6 +46,11 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 
 # AI Configuration (Gemini)
 GOOGLE_GENAI_API_KEY=your_gemini_api_key
+OPENAI_API_KEY= your_openai_api
+GROQ_API_KEY=your_groq_api 
+MISTRAL_API_KEY=your_mistral_api
+CEREBRAS_API_KEY=your_cerebras_api
+COHERE_API_KEY=your_cohere_api
 ```
 
 ### 3. Commands
