@@ -1,0 +1,21 @@
+
+{
+  "images": [
+    {
+      "id": "hero-study",
+      "url": "https://picsum.photos/seed/studyspark-hero/600/400",
+      "alt": "Academic Dashboard",
+      "width": 600,
+      "height": 400,
+      "hint": "study desk"
+    },
+    {
+      "id": "about-collaboration",
+      "url": "https://picsum.photos/seed/studyspark-about-v2/600/400",
+      "alt": "Students collaborating effectively",
+      "width": 600,
+      "height": 400,
+      "hint": "students collaboration"
+    }
+  ]
+}

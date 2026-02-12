@@ -1,0 +1,21 @@
+import { config } from 'dotenv';
+config();
+
+import '@/ai/flows/text-summarization.ts';
+import '@/ai/flows/ai-tutor-assistance.ts';
+import '@/ai/flows/study-plan-flow.ts';
+import '@/ai/flows/quiz-generator-flow.ts';
+import '@/ai/flows/lesson-planner-flow.ts';
+import '@/ai/flows/ppt-generator-flow.ts';
+import '@/ai/flows/flashcard-generator-flow.ts';
+import '@/ai/flows/audio-notes-flow.ts';
+import '@/ai/flows/timetable-generator-flow.ts';
+import '@/ai/flows/problem-solver-flow.ts';
+import '@/ai/flows/code-mentor-flow.ts';
+import '@/ai/flows/career-navigator-flow.ts';
+import '@/ai/flows/researcher-flow.ts';
+import '@/ai/flows/creative-writer-flow.ts';
+import '@/ai/flows/mnemonics-generator-flow.ts';
+import '@/ai/flows/ai-humanizer-flow.ts';
+import '@/ai/flows/dictionary-flow.ts';
+import '@/ai/flows/api-diagnostic-flow.ts';

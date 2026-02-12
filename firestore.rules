@@ -1,0 +1,85 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Users: Authenticated can read (needed for roster and teacher discovery).
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    // Feedback: Public read/create for the landing page.
+    match /feedback/{feedbackId} {
+      allow read, create: if true;
+      allow update, delete: if false;
+    }
+    
+    // Subjects: Private to the owner.
+    match /subjects/{subjectId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid);
+    }
+
+    // Assignments: Private to the owner.
+    match /assignments/{assignmentId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid);
+    }
+
+    // Study Materials: 
+    match /studyMaterials/{materialId} {
+      allow read: if resource.data.isPublic == true || resource.data.isBroadcast == true || resource.data.userId == request.auth.uid;
+      allow write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid);
+    }
+
+    // Announcements: 
+    match /announcements/{announcementId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid);
+    }
+    
+    // User stats: Strictly private.
+    match /userStats/{userId} {
+       allow read, write: if isOwner(userId);
+    }
+    
+    // Timetable entries:
+    match /timetableEntries/{entryId} {
+       allow read: if isAuthenticated() && (resource.data.isShared == true || resource.data.userId == request.auth.uid);
+       allow write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid);
+    }
+    
+    // Timetable settings: 
+    match /userTimetableSettings/{settingId} {
+       allow read: if isAuthenticated();
+       allow write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid);
+    }
+
+    // Todos: Strictly private.
+    match /todos/{todoId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid);
+    }
+
+    // Chats: Accessible by participants.
+    match /chats/{chatId} {
+      allow read, write: if isAuthenticated();
+      
+      match /messages/{messageId} {
+        allow read, write: if isAuthenticated();
+      }
+    }
+
+    // Contact messages: anyone can create, only viewable in console.
+    match /contactMessages/{messageId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+  }
+}
