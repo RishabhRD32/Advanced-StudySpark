@@ -1,4 +1,4 @@
- StudySpark - Modern Academic Hub
+Advanced StudySpark - Modern Academic Hub
 
 StudySpark is a comprehensive, AI-powered academic workspace designed for both students and teachers. It leverages state-of-the-art AI to streamline note-taking, study planning, and classroom management.
 
