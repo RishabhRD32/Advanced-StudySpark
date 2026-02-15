@@ -26,7 +26,7 @@ const mnemonicSchema = z.object({
   style: z.enum(['Acronym', 'Sentence', 'Story', 'Rhyme']),
 });
 
-export default function MnemonicsPage() {
+export default function MemoryTricksPage() {
   const { userProfile } = useAuth();
   const [result, setResult] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -53,12 +53,12 @@ export default function MnemonicsPage() {
           model: userProfile?.preferredCloudModel || 'gemini-1.5-flash'
         });
         setResult(`${res.mnemonic}\n\nExplanation: ${res.explanation}`);
-        toast({ title: "Cloud Sync Success", description: `Generated via ${userProfile?.preferredCloudProvider?.toUpperCase() || 'Cloud'}.` });
+        toast({ title: "Memory Trick Ready", description: "Your custom recall hack is generated." });
       } catch (error: any) {
         toast({ 
           variant: "destructive", 
           title: "Logic Error", 
-          description: error.message || "Failed to generate mnemonic. Switch to Offline Mode." 
+          description: error.message || "Failed to generate mnemonic." 
         });
       } finally {
         setIsCloudLoading(false);
@@ -72,10 +72,10 @@ export default function MnemonicsPage() {
         );
         if (response) {
           setResult(response);
-          toast({ title: "Neural Link Complete", description: "Mnemonic generated locally." });
+          toast({ title: "Local Trick Ready", description: "Generated using private local AI." });
         }
       } catch (error) {
-        toast({ variant: "destructive", title: "Error", description: "Local inference failed." });
+        toast({ variant: "destructive", title: "Error", description: "Local AI failed to run." });
       } finally {
         setIsGenerating(false);
       }
@@ -91,7 +91,7 @@ export default function MnemonicsPage() {
 
   const handleDownload = () => {
     if (!result) return;
-    downloadTextAsPDF("Memorization Aid", result, "My_Mnemonic");
+    downloadTextAsPDF("Memory Tricks Aid", result, "My_Memory_Hacks");
   };
 
   const isLoading = isCloudLoading || (offlineLoading && !isReady) || isGenerating;
@@ -102,9 +102,9 @@ export default function MnemonicsPage() {
         <div className="h-16 w-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl animate-float">
           <Lightbulb className="h-8 w-8 text-primary" />
         </div>
-        <h1 className="text-5xl font-black tracking-tighter uppercase italic text-primary">Mnemonic Maker</h1>
+        <h1 className="text-5xl font-black tracking-tighter uppercase italic text-primary">Memory Tricks</h1>
         <p className="text-xl text-muted-foreground font-bold opacity-80 max-w-2xl mx-auto leading-relaxed">
-          Turn complex terms into catchy memory hacks via Cloud or Offline Logic.
+          Turn hard terms into easy-to-remember hacks using AI.
         </p>
       </div>
 
@@ -138,7 +138,7 @@ export default function MnemonicsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField control={form.control} name="style" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Memory Style</FormLabel>
+                      <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Trick Style</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger className="h-14 border-2 font-black rounded-2xl bg-background">
@@ -148,7 +148,7 @@ export default function MnemonicsPage() {
                         <SelectContent className="rounded-2xl border-4">
                           <SelectItem value="Acronym" className="font-bold py-3">Acronym (First Letters)</SelectItem>
                           <SelectItem value="Sentence" className="font-bold py-3">Sentence (Catchy Phrase)</SelectItem>
-                          <SelectItem value="Story" className="font-bold py-3">Short Story (Vivid)</SelectItem>
+                          <SelectItem value="Story" className="font-bold py-3">Short Story (Funny)</SelectItem>
                           <SelectItem value="Rhyme" className="font-bold py-3">Rhyme (Poem)</SelectItem>
                         </SelectContent>
                       </Select>
@@ -158,9 +158,9 @@ export default function MnemonicsPage() {
                   <div className="flex items-end">
                     <Button type="submit" disabled={isLoading} className="w-full h-14 text-md font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-[1.02] transition-all">
                       {isGenerating ? (
-                        <><Activity className="mr-3 h-6 w-6 animate-pulse" /> {isCloudMode ? 'Contacting Cloud...' : 'Neural Architecting...'}</>
+                        <><Activity className="mr-3 h-6 w-6 animate-pulse" /> Making Trick...</>
                       ) : (
-                        <><Sparkles className="mr-3 h-5 w-5" /> Generate Aid</>
+                        <><Sparkles className="mr-3 h-5 w-5" /> Generate Trick</>
                       )}
                     </Button>
                   </div>
@@ -169,20 +169,6 @@ export default function MnemonicsPage() {
             </Form>
           </CardContent>
         </Card>
-
-        {offlineLoading && !isReady && !isCloudMode && (
-          <Card className="border-2 border-primary/20 bg-primary/5 p-6 rounded-3xl animate-in zoom-in-95 duration-500">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase">
-                  <Cpu className="h-4 w-4 animate-spin" /> Preparing Neural engine...
-                </div>
-                <span className="text-[10px] font-bold">{progress.includes('%') ? progress : 'Initializing'}</span>
-              </div>
-              <Progress value={progress.includes('%') ? parseInt(progress) : 10} className="h-2" />
-            </div>
-          </Card>
-        )}
 
         <div className="space-y-8">
           {(isGenerating || result) ? (
@@ -194,9 +180,9 @@ export default function MnemonicsPage() {
                       <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border-2 border-primary/20">
                         {isCloudMode ? <Globe className="h-5 w-5" /> : <Cpu className="h-5 w-5" />}
                       </div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">{isCloudMode ? (userProfile?.preferredCloudProvider?.toUpperCase() || 'Cloud Generation') : 'Local Memory Aid'}</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">{isCloudMode ? 'Cloud Generation' : 'Local Memory Trick'}</p>
                     </div>
-                    <CardTitle className="text-4xl font-black tracking-tight text-primary">Neural Result</CardTitle>
+                    <CardTitle className="text-4xl font-black tracking-tight text-primary">Your Result</CardTitle>
                   </div>
                   {result && (
                     <div className="flex gap-3">
@@ -218,8 +204,7 @@ export default function MnemonicsPage() {
                           <Brain className="h-8 w-8 text-primary animate-pulse" />
                         </div>
                         <div className="text-center">
-                          <p className="text-sm font-black uppercase tracking-[0.2em] text-primary">Drafting Mnemonic</p>
-                          <p className="text-[9px] font-bold text-muted-foreground uppercase">Mapping phonetics and recall hooks...</p>
+                          <p className="text-sm font-black uppercase tracking-[0.2em] text-primary">Drafting Tricks</p>
                         </div>
                       </div>
                       <div className="space-y-4">
@@ -244,7 +229,7 @@ export default function MnemonicsPage() {
                  <BookOpen className="h-12 w-12" />
                </div>
                <h3 className="text-3xl font-black uppercase tracking-widest">Awaiting Input</h3>
-               <p className="text-lg font-bold mt-2">Enter terms above to generate your custom memory hack.</p>
+               <p className="text-lg font-bold mt-2">Enter terms above to generate your memory trick.</p>
             </div>
           )}
         </div>

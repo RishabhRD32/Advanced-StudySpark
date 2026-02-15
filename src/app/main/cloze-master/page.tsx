@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -15,7 +14,8 @@ import {
   ArrowDown, 
   FileQuestion,
   Sparkles,
-  Trophy
+  Trophy,
+  Puzzle
 } from "lucide-react";
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -27,7 +27,7 @@ type Blank = {
   isCorrect: boolean | null;
 };
 
-export default function ClozeMasterPage() {
+export default function MemoryFillPage() {
   const [text, setText] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [tokens, setTokens] = useState<string[]>([]);
@@ -90,11 +90,11 @@ export default function ClozeMasterPage() {
     <div className="max-w-5xl mx-auto space-y-10 pb-24 animate-in fade-in duration-700">
       <div className="text-center space-y-4">
         <div className="h-16 w-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl animate-float">
-          <FileQuestion className="h-8 w-8 text-primary" />
+          <Puzzle className="h-8 w-8 text-primary" />
         </div>
-        <h1 className="text-5xl font-black tracking-tighter uppercase italic">Cloze Master</h1>
+        <h1 className="text-5xl font-black tracking-tighter uppercase italic">Memory Fill</h1>
         <p className="text-xl text-muted-foreground font-bold opacity-80 max-w-2xl mx-auto">
-          Algorithmic memory retrieval. No AI needed—just pure logic to test your recall.
+          Test your memory by filling in the gaps of your own notes.
         </p>
       </div>
 
@@ -113,7 +113,7 @@ export default function ClozeMasterPage() {
             
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-4">
               <div className="flex items-center gap-4">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Gap Frequency:</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Difficulty:</span>
                 <div className="flex gap-2">
                   {[3, 5, 7, 10].map(val => (
                     <Button 
@@ -122,7 +122,7 @@ export default function ClozeMasterPage() {
                       onClick={() => setDifficulty(val)}
                       className="h-10 w-12 rounded-xl font-black text-xs"
                     >
-                      1:{val}
+                      {val === 3 ? 'Hard' : val === 5 ? 'Med' : 'Easy'}
                     </Button>
                   ))}
                 </div>
@@ -132,7 +132,7 @@ export default function ClozeMasterPage() {
                 disabled={text.length < 50}
                 className="h-16 px-12 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
               >
-                <Zap className="mr-3 h-5 w-5 fill-white/20" /> Generate Algorithmic Quiz
+                <Zap className="mr-3 h-5 w-5 fill-white/20" /> Start Memory Test
               </Button>
             </div>
           </CardContent>
@@ -200,7 +200,7 @@ export default function ClozeMasterPage() {
                   onClick={checkAnswers} 
                   className="h-16 px-16 rounded-[2rem] font-black uppercase tracking-widest text-lg shadow-2xl hover:scale-105 active:scale-95 transition-all"
                 >
-                  Evaluate Logic
+                  Check Answers
                 </Button>
               </div>
             </CardContent>

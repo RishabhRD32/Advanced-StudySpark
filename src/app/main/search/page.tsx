@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-  Search, 
+  Search as SearchIcon, 
   BrainCircuit, 
   ScrollText, 
   FileQuestion, 
@@ -26,11 +26,11 @@ import Link from "next/link";
 import React, { Suspense } from "react";
 
 const APP_TOOLS = [
-  { href: "/main/unit-converter", label: "Metric Matrix", icon: <ArrowRightLeft className="h-5 w-5" />, description: "High-precision scientific and numeral converter." },
-  { href: "/main/gpa-calculator", label: "GPA Tracking", icon: <GraduationCap className="h-5 w-5" />, description: "Weighted performance calculator." },
-  { href: "/main/citation-generator", label: "Citation Pro", icon: <Quote className="h-5 w-5" />, description: "Algorithmic reference formatter." },
-  { href: "/main/reading-analytics", label: "Reading Stats", icon: <ScanText className="h-5 w-5" />, description: "Readability and text statistics." },
-  { href: "/main/cloze-master", label: "Cloze Master", icon: <Puzzle className="h-5 w-5" />, description: "Algorithmic fill-in-the-blanks memory test." },
+  { href: "/main/unit-converter", label: "Unit Converter", icon: <ArrowRightLeft className="h-5 w-5" />, description: "Quick scientific and math converter." },
+  { href: "/main/gpa-calculator", label: "GPA Tracking", icon: <GraduationCap className="h-5 w-5" />, description: "Calculate your performance." },
+  { href: "/main/citation-generator", label: "Citation Pro", icon: <Quote className="h-5 w-5" />, description: "Format academic references." },
+  { href: "/main/reading-analytics", label: "Reading Stats", icon: <ScanText className="h-5 w-5" />, description: "Check reading levels and speed." },
+  { href: "/main/cloze-master", label: "Memory Fill", icon: <Puzzle className="h-5 w-5" />, description: "Fill in the gaps memory test." },
   { href: "/main/ai-tutor", label: "AI Tutor", icon: <BrainCircuit className="h-5 w-5" />, description: "Get help with your study notes." },
   { href: "/main/ai-summarizer", label: "Summarizer", icon: <ScrollText className="h-5 w-5" />, description: "Shorten long notes instantly." },
   { href: "/main/quiz-generator", label: "Practice Quiz", icon: <FileQuestion className="h-5 w-5" />, description: "Test your knowledge." },
@@ -60,7 +60,7 @@ function SearchResults() {
     <div className="space-y-12 max-w-6xl mx-auto pb-24 animate-in fade-in duration-700">
       <div className="text-center space-y-4">
         <div className="h-16 w-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl animate-float">
-          <Search className="h-8 w-8 text-primary" />
+          <SearchIcon className="h-8 w-8 text-primary" />
         </div>
         <h1 className="text-5xl font-black tracking-tighter uppercase italic">Search Results</h1>
         <p className="text-xl text-muted-foreground font-bold">
@@ -73,7 +73,7 @@ function SearchResults() {
           <Zap className="h-20 w-20" />
           <div>
             <p className="text-3xl font-black uppercase tracking-widest">No Matches</p>
-            <p className="text-xl font-bold mt-2">Try using simpler words like "Math" or "Tutor".</p>
+            <p className="text-xl font-bold mt-2">Try simpler words.</p>
           </div>
           <Button asChild variant="outline" className="h-14 px-10 rounded-2xl border-4 font-black uppercase tracking-widest">
             <Link href="/main/dashboard">Back to Dashboard</Link>

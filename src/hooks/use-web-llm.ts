@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useCallback } from 'react';
@@ -5,9 +6,9 @@ import * as webllm from "@mlc-ai/web-llm";
 
 // Standard IDs for WebLLM models
 export const WEBLLM_MODELS = [
-  { id: "Llama-3.2-1B-Instruct-q4f16_1-MLC", label: "Llama 3.2 1B (Fastest)" },
+  { id: "Llama-3.2-1B-Instruct-q4f16_1-MLC", label: "Llama 3.2 1B (Fastest - Budget Devices)" },
   { id: "Llama-3.2-3B-Instruct-q4f16_1-MLC", label: "Llama 3.2 3B (Balanced)" },
-  { id: "Phi-3.5-mini-instruct-q4f16_1-MLC", label: "Phi 3.5 Mini (High Quality)" },
+  { id: "Phi-3.5-mini-instruct-q4f16_1-MLC", label: "Phi 3.5 Mini (High Quality - Requires 4GB+ RAM)" },
   { id: "Gemma-2-2b-it-q4f16_1-MLC", label: "Gemma 2 2B (Efficient)" },
   { id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC", label: "Qwen 2.5 1.5B" }
 ];
@@ -23,18 +24,37 @@ export function useWebLLM() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [hardwareWarning, setHardwareWarning] = useState<string | null>(null);
+
+  const checkHardware = useCallback(async () => {
+    // Basic check for WebGPU
+    if (!navigator.gpu) {
+      setError("Your browser does not support WebGPU. Local AI requires a modern browser like Chrome or Edge.");
+      return false;
+    }
+
+    // Check for RAM (approximate)
+    if ('deviceMemory' in navigator) {
+      const ram = (navigator as any).deviceMemory;
+      if (ram < 4) {
+        setHardwareWarning("Your device has low memory. Local AI may run slowly or cause the browser to restart.");
+      }
+    }
+    return true;
+  }, []);
 
   const initEngine = async (modelId: string = DEFAULT_MODEL) => {
-    // If engine already exists for THIS specific model, use it
+    const isCapable = await checkHardware();
+    if (!isCapable) return null;
+
     if (globalEngine && currentModelId === modelId) {
       setEngine(globalEngine);
       return globalEngine;
     }
 
-    // If changing models, dispose of the old one
     if (globalEngine && currentModelId !== modelId) {
       setLoading(true);
-      setProgress("Switching Neural Core...");
+      setProgress("Purging Previous Neural Core...");
       await globalEngine.unload();
       globalEngine = null;
     }
@@ -67,7 +87,7 @@ export function useWebLLM() {
       return newEngine;
     } catch (e: any) {
       console.error("WebLLM Init Error:", e);
-      setError(e.message || "Your hardware does not support WebGPU local AI.");
+      setError(e.message || "Hardware Inference Failed. This usually happens on budget devices without sufficient VRAM.");
       setLoading(false);
       isInitializing = false;
       return null;
@@ -102,10 +122,10 @@ export function useWebLLM() {
         globalEngine = null;
         setEngine(null);
       }
-      setError(e.message || "Local AI processing failed.");
+      setError("Neural Link Interrupted. Device likely ran out of memory.");
       return null;
     }
   }, [engine]);
 
-  return { generate, loading, progress, error, isReady: !!(engine || globalEngine) && currentModelId !== null };
+  return { generate, loading, progress, error, hardwareWarning, isReady: !!(engine || globalEngine) && currentModelId !== null };
 }

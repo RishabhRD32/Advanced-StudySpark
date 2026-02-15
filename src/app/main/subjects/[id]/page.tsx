@@ -41,13 +41,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import type { Assignment, StudyMaterial } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/lib/auth/use-auth";
-import { format, parse, isValid } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { aiTutorAssistance } from "@/ai/flows/ai-tutor-assistance";
 import { summarizeText } from "@/ai/flows/text-summarization";
 
 const assignmentSchema = z.object({
   title: z.string().min(1, "Name is required"),
-  dueDate: z.date({ required_error: "A valid date is required (DD/MM/YYYY)." }),
+  dueDate: z.string().min(1, "A valid date is required."),
   status: z.enum(["Pending", "Completed"]),
   grade: z.string().optional(),
 }).refine(data => {
@@ -79,7 +79,6 @@ export default function SubjectDetailPage() {
   const [isAssignmentModalOpen, setAssignmentModalOpen] = useState(false);
   const [isMaterialModalOpen, setMaterialModalOpen] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
-  const [dateInput, setDateInput] = useState("");
 
   // AI Assistant States
   const [aiResult, setAiResult] = useState<string | null>(null);
@@ -90,7 +89,7 @@ export default function SubjectDetailPage() {
 
   const assignmentForm = useForm<z.infer<typeof assignmentSchema>>({
     resolver: zodResolver(assignmentSchema),
-    defaultValues: { title: "", status: "Pending", grade: "" },
+    defaultValues: { title: "", status: "Pending", grade: "", dueDate: "" },
   });
 
   const materialForm = useForm<z.infer<typeof materialSchema>>({
@@ -101,19 +100,26 @@ export default function SubjectDetailPage() {
   const handleOpenAssignmentModal = (assignment: Assignment | null = null) => {
     setEditingAssignment(assignment);
     if (assignment) {
-      const date = new Date(assignment.dueDate);
-      assignmentForm.reset({ title: assignment.title, dueDate: date, status: assignment.status, grade: assignment.grade?.toString() ?? "" });
-      setDateInput(format(date, "dd/MM/yyyy"));
+      assignmentForm.reset({ 
+        title: assignment.title, 
+        dueDate: assignment.dueDate.split('T')[0], 
+        status: assignment.status, 
+        grade: assignment.grade?.toString() ?? "" 
+      });
     } else {
-      assignmentForm.reset({ title: "", dueDate: undefined, status: "Pending", grade: "" });
-      setDateInput("");
+      assignmentForm.reset({ 
+        title: "", 
+        dueDate: new Date().toISOString().split('T')[0], 
+        status: "Pending", 
+        grade: "" 
+      });
     }
     setAssignmentModalOpen(true);
   };
   
   const handleAssignmentSubmit = async (values: z.infer<typeof assignmentSchema>) => {
     const grade = values.status === 'Completed' && values.grade ? parseFloat(values.grade) : null;
-    const data = { ...values, grade, dueDate: values.dueDate.toISOString() };
+    const data = { ...values, grade, dueDate: new Date(values.dueDate).toISOString() };
     
     if (editingAssignment) {
       updateAssignment(editingAssignment.id, data);
@@ -138,7 +144,6 @@ export default function SubjectDetailPage() {
     materialForm.reset();
   };
 
-  // AI Help Handlers - Integrated with Direct Bridge Preferences
   const handleExplainConcepts = async () => {
     if (!subject) return;
     setIsAiLoading(true);
@@ -146,13 +151,13 @@ export default function SubjectDetailPage() {
     setAiResult(null);
     try {
       const res = await aiTutorAssistance({ 
-        question: `Explain the core concepts and fundamental principles of the subject: ${subject.title}. Use simple language and clear academic context.`,
+        question: `Explain the core concepts and fundamental principles of the subject: ${subject.title}. Use simple language.`,
         provider: userProfile?.preferredCloudProvider || 'google',
         model: userProfile?.preferredCloudModel || 'gemini-1.5-flash'
       });
       setAiResult(res.answer);
     } catch (e) {
-      toast({ variant: "destructive", title: "AI Busy", description: "Could not analyze concepts right now. Try switching providers in Settings." });
+      toast({ variant: "destructive", title: "AI Busy", description: "Could not analyze concepts right now." });
     } finally {
       setIsAiLoading(false);
     }
@@ -161,7 +166,7 @@ export default function SubjectDetailPage() {
   const handleSummarizeNotes = async () => {
     const textMaterials = materials.filter(m => m.contentType === 'text' && m.content);
     if (textMaterials.length === 0) {
-      toast({ title: "No Text Notes", description: "Upload some text notes first to use this feature." });
+      toast({ title: "No Notes", description: "Add some text notes first." });
       return;
     }
     setIsAiLoading(true);
@@ -176,7 +181,7 @@ export default function SubjectDetailPage() {
       });
       setAiResult(res.summary);
     } catch (e) {
-      toast({ variant: "destructive", title: "AI Busy", description: "Could not analyze notes right now." });
+      toast({ variant: "destructive", title: "AI Busy", description: "Could not analyze notes." });
     } finally {
       setIsAiLoading(false);
     }
@@ -189,13 +194,13 @@ export default function SubjectDetailPage() {
     setAiResult(null);
     try {
       const res = await aiTutorAssistance({ 
-        question: `Create a step-by-step study roadmap for mastering the subject: ${subject.title}. Include key topics to cover and a suggested order of study based on academic standards.`,
+        question: `Create a step-by-step study roadmap for the subject: ${subject.title}.`,
         provider: userProfile?.preferredCloudProvider || 'google',
         model: userProfile?.preferredCloudModel || 'gemini-1.5-flash'
       });
       setAiResult(res.answer);
     } catch (e) {
-      toast({ variant: "destructive", title: "AI Busy", description: "Could not generate roadmap right now." });
+      toast({ variant: "destructive", title: "AI Busy", description: "Could not generate roadmap." });
     } finally {
       setIsAiLoading(false);
     }
@@ -218,12 +223,12 @@ export default function SubjectDetailPage() {
                 <FileText className="h-5 w-5" /> {material.title}
               </button>
             </DialogTrigger>
-            <DialogContent className="max-w-3xl rounded-[3rem] border-8 bg-background/95 backdrop-blur-3xl p-0 overflow-hidden">
+            <DialogContent className="max-w-3xl rounded-[3rem] border-8 bg-background/95 backdrop-blur-xl p-0 overflow-hidden">
               <DialogHeader className="bg-primary/5 border-b-4 border-primary/5 p-10">
                 <DialogTitle className="text-4xl font-bold tracking-tight">{material.title}</DialogTitle>
                 <div className="flex gap-4 mt-4">
-                  {material.isPublic && <Badge className="font-bold uppercase text-[10px] tracking-widest"><Globe className="h-3 w-3 mr-1" /> Shared publicly</Badge>}
-                  {material.isBroadcast && <Badge variant="secondary" className="font-bold uppercase text-[10px] tracking-widest"><Megaphone className="h-3 w-3 mr-1" /> Sent by Teacher</Badge>}
+                  {material.isPublic && <Badge className="font-bold uppercase text-[10px] tracking-widest"><Globe className="h-3 w-3 mr-1" /> Public</Badge>}
+                  {material.isBroadcast && <Badge variant="secondary" className="font-bold uppercase text-[10px] tracking-widest"><Megaphone className="h-3 w-3 mr-1" /> Teacher Shared</Badge>}
                 </div>
               </DialogHeader>
               <div className="p-10 max-h-[60vh] overflow-y-auto font-medium text-xl leading-relaxed whitespace-pre-wrap">
@@ -232,8 +237,6 @@ export default function SubjectDetailPage() {
             </DialogContent>
           </Dialog>
         )}
-        {material.isBroadcast && <Megaphone className="h-4 w-4 text-emerald-500 animate-pulse" />}
-        {material.isPublic && <Globe className="h-4 w-4 text-blue-400" />}
       </div>
     );
   }
@@ -262,7 +265,6 @@ export default function SubjectDetailPage() {
       </div>
 
       <div className="space-y-12 max-w-5xl mx-auto">
-        {/* AI SUBJECT ASSISTANT */}
         <Card className="border-4 border-primary/10 bg-primary/5 rounded-[3rem] overflow-hidden shadow-2xl">
           <CardHeader className="bg-primary/10 border-b-4 border-primary/5 py-8 px-10 flex flex-row items-center justify-between">
             <div className="flex items-center gap-4">
@@ -271,7 +273,7 @@ export default function SubjectDetailPage() {
               </div>
               <div>
                 <CardTitle className="text-sm font-black uppercase tracking-[0.2em]">AI Subject Assistant</CardTitle>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase">Analyze resources via {userProfile?.preferredCloudProvider?.toUpperCase() || 'Google'}</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase">Analyze resources via AI</p>
               </div>
             </div>
             {aiResult && (
@@ -299,36 +301,23 @@ export default function SubjectDetailPage() {
             ) : isAiLoading ? (
               <div className="py-12 flex flex-col items-center justify-center text-center gap-4">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <p className="font-black uppercase tracking-[0.2em] text-primary animate-pulse">
-                  {aiMode === 'concepts' ? 'Analyzing Science...' : aiMode === 'notes' ? 'Synthesizing Resources...' : 'Mapping Roadmap...'}
-                </p>
+                <p className="font-black uppercase tracking-[0.2em] text-primary animate-pulse">AI is thinking...</p>
               </div>
             ) : (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
                 <div className="flex items-center gap-3 border-b pb-4">
-                  {aiMode === 'concepts' && <BrainCircuit className="h-5 w-5 text-primary" />}
-                  {aiMode === 'notes' && <ScrollText className="h-5 w-5 text-primary" />}
-                  {aiMode === 'roadmap' && <Map className="h-5 w-5 text-primary" />}
-                  <h3 className="font-black uppercase text-xs tracking-widest">
-                    {aiMode === 'concepts' ? 'Core Concepts' : aiMode === 'notes' ? 'Notes Summary' : 'Subject Roadmap'}
-                  </h3>
+                  <h3 className="font-black uppercase text-xs tracking-widest">AI Result</h3>
                 </div>
                 <div className="prose dark:prose-invert max-w-none">
                   <p className="text-xl font-medium leading-relaxed whitespace-pre-wrap italic opacity-90">
                     {aiResult}
                   </p>
                 </div>
-                <div className="pt-6 flex justify-end">
-                  <Button variant="outline" onClick={() => { setAiResult(null); setAiAiMode(null); }} className="rounded-xl font-bold uppercase text-[10px] tracking-widest h-10 border-2">
-                    Clear Result
-                  </Button>
-                </div>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* MY TASKS */}
         <Card className="glass-card">
           <CardHeader className="bg-primary/5 border-b-4 border-primary/5 py-10 px-12 flex flex-row items-center justify-between">
             <div className="flex items-center gap-5">
@@ -355,7 +344,7 @@ export default function SubjectDetailPage() {
                   ) : assignments.map((assignment) => (
                     <TableRow key={assignment.id} className="hover:bg-primary/[0.03] border-none group transition-all h-32">
                       <TableCell className="pl-12 py-8 font-bold text-3xl group-hover:text-primary transition-colors tracking-tight border-r-4 border-primary/5">{assignment.title}</TableCell>
-                      <TableCell className="font-bold text-xs uppercase tracking-widest text-muted-foreground border-r-4 border-primary/5">{format(new Date(assignment.dueDate), 'PPP')}</TableCell>
+                      <TableCell className="font-bold text-xs uppercase tracking-widest text-muted-foreground border-r-4 border-primary/5">{format(parseISO(assignment.dueDate), 'PPP')}</TableCell>
                       <TableCell className="border-r-4 border-primary/5">
                         <Badge variant={assignment.status === "Completed" ? "secondary" : "outline"} className="font-bold uppercase text-[10px] px-6 py-2 rounded-full border-2 shadow-inner">
                           {assignment.status}
@@ -372,7 +361,7 @@ export default function SubjectDetailPage() {
                                   <AlertDialog>
                                       <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive font-bold py-4 rounded-xl px-6 cursor-pointer"><Trash2 className="mr-3 h-5 w-5" /> Delete</DropdownMenuItem></AlertDialogTrigger>
                                       <AlertDialogContent className="rounded-[3rem] border-8 border-primary/5 p-12">
-                                          <AlertDialogHeader><AlertDialogTitle className="font-bold text-4xl tracking-tight">Are you sure?</AlertDialogTitle><AlertDialogDescription className="font-medium text-xl leading-relaxed mt-4">This will delete this task. You cannot undo this.</AlertDialogDescription></AlertDialogHeader>
+                                          <AlertDialogHeader><AlertDialogTitle className="font-bold text-4xl tracking-tight">Are you sure?</AlertDialogTitle><AlertDialogDescription className="font-medium text-xl leading-relaxed mt-4">This will delete this task.</AlertDialogDescription></AlertDialogHeader>
                                           <AlertDialogFooter className="mt-10 gap-4"><AlertDialogCancel className="rounded-2xl h-16 px-10 font-bold text-[12px] uppercase tracking-widest border-4">Cancel</AlertDialogCancel><AlertDialogAction onClick={() => deleteAssignment(assignment.id)} className="bg-destructive hover:bg-destructive/90 rounded-2xl h-16 px-10 font-bold text-[12px] uppercase tracking-widest shadow-2xl">Delete</AlertDialogAction></AlertDialogFooter>
                                       </AlertDialogContent>
                                   </AlertDialog>
@@ -388,14 +377,12 @@ export default function SubjectDetailPage() {
           </CardContent>
         </Card>
 
-        {/* STUDY MATERIALS */}
         <Card className="glass-card">
             <CardHeader className="bg-primary/5 border-b-4 border-primary/5 py-10 px-12 flex flex-row items-center gap-5">
                 <ShieldCheck className="h-8 w-8 text-primary" />
                 <CardTitle className="text-[12px] font-bold uppercase tracking-widest">Study Materials</CardTitle>
             </CardHeader>
             <CardContent className="p-12">
-                {materialsLoading ? <div className="p-20 text-center"><Zap className="animate-bolt mx-auto text-primary h-16 w-16 fill-primary/20"/></div> : (
                 <Accordion type="multiple" className="space-y-8">
                     {[
                       { label: 'Class Notes', val: 'Notes' },
@@ -421,7 +408,6 @@ export default function SubjectDetailPage() {
                       </AccordionItem>
                     ))}
                 </Accordion>
-                )}
             </CardContent>
         </Card>
       </div>
@@ -432,23 +418,13 @@ export default function SubjectDetailPage() {
                         <DialogHeader><DialogTitle className="font-bold text-5xl tracking-tight mb-4">{editingAssignment ? 'Update' : 'New'} <span className="text-primary">Task</span></DialogTitle></DialogHeader>
                         <div className="grid gap-8 py-10">
                             <FormField control={assignmentForm.control} name="title" render={({ field }) => (
-                                <FormItem><FormLabel className="text-[11px] font-bold uppercase tracking-widest text-primary/60">Task Name</FormLabel><FormControl><Input placeholder="What do you need to do?" {...field} className="h-16 border-4 border-primary/10 rounded-2xl font-bold text-xl px-6 focus:border-primary transition-all shadow-inner" /></FormControl><FormMessage /></FormItem>
+                                <FormItem><FormLabel className="text-[11px] font-bold uppercase tracking-widest text-primary/60">Task Name</FormLabel><FormControl><Input placeholder="Task Name..." {...field} className="h-16 border-4 border-primary/10 rounded-2xl font-bold text-xl px-6 focus:border-primary shadow-inner" /></FormControl><FormMessage /></FormItem>
                             )}/>
                             <FormField control={assignmentForm.control} name="dueDate" render={({ field }) => (
                                 <FormItem className="flex flex-col">
-                                  <FormLabel className="text-[11px] font-bold uppercase tracking-widest text-primary/60">Due Date (DD/MM/YYYY)</FormLabel>
+                                  <FormLabel className="text-[11px] font-bold uppercase tracking-widest text-primary/60">Due Date</FormLabel>
                                   <FormControl>
-                                    <Input 
-                                      placeholder="DD/MM/YYYY" 
-                                      value={dateInput}
-                                      onChange={(e) => {
-                                        const val = e.target.value;
-                                        setDateInput(val);
-                                        const parsed = parse(val, "dd/MM/yyyy", new Date());
-                                        if (isValid(parsed)) field.onChange(parsed);
-                                      }}
-                                      className="h-16 border-4 border-primary/10 rounded-2xl px-6 font-bold text-lg focus:border-primary shadow-inner transition-all"
-                                    />
+                                    <Input type="date" {...field} className="h-16 border-4 border-primary/10 rounded-2xl px-6 font-bold text-lg focus:border-primary shadow-inner" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -464,7 +440,7 @@ export default function SubjectDetailPage() {
                         </div>
                         <DialogFooter className="gap-4 pt-6">
                           <Button type="button" variant="ghost" onClick={() => setAssignmentModalOpen(false)} className="font-bold text-[12px] uppercase tracking-widest h-16 px-10">Cancel</Button>
-                          <Button type="submit" disabled={assignmentForm.formState.isSubmitting} className="h-16 px-12 rounded-[2rem] font-bold uppercase text-[12px] tracking-widest shadow-xl transition-all active:scale-95">Save Task</Button>
+                          <Button type="submit" disabled={assignmentForm.formState.isSubmitting} className="h-16 px-12 rounded-[2rem] font-bold uppercase text-[12px] tracking-widest shadow-xl transition-all">Save Task</Button>
                         </DialogFooter>
                     </form></Form>
             </DialogContent>
@@ -495,7 +471,7 @@ export default function SubjectDetailPage() {
                                 <FormField control={materialForm.control} name="isPublic" render={({ field }) => (
                                     <FormItem className="flex flex-row items-center space-x-4 space-y-0 rounded-3xl border-4 border-primary/5 p-6 bg-primary/[0.02] hover:bg-primary/[0.05] transition-all cursor-pointer">
                                     <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-6 w-6 border-2" /></FormControl>
-                                    <div className="space-y-1 leading-none"><FormLabel className="font-bold uppercase text-[11px] tracking-widest">Share publicly</FormLabel><p className="text-[10px] text-muted-foreground font-medium uppercase opacity-60">Help students everywhere.</p></div></FormItem>
+                                    <div className="space-y-1 leading-none"><FormLabel className="font-bold uppercase text-[11px] tracking-widest">Public</FormLabel><p className="text-[10px] text-muted-foreground font-medium uppercase opacity-60">Help students everywhere.</p></div></FormItem>
                                 )}/>
 
                                 {isTeacher && (
@@ -503,8 +479,8 @@ export default function SubjectDetailPage() {
                                         <FormItem className="flex flex-row items-center space-x-4 space-y-0 rounded-3xl border-4 border-emerald-500/10 p-6 bg-emerald-500/[0.02] hover:bg-emerald-500/[0.05] transition-all cursor-pointer">
                                         <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-6 w-6 border-emerald-500 data-[state=checked]:bg-emerald-500" /></FormControl>
                                         <div className="space-y-1 leading-none">
-                                            <FormLabel className="font-bold uppercase text-[11px] tracking-widest text-emerald-600">Send to Class</FormLabel>
-                                            <p className="text-[10px] text-muted-foreground font-medium uppercase opacity-60">Share with students in your class.</p>
+                                            <FormLabel className="font-bold uppercase text-[11px] tracking-widest text-emerald-600">Share with class</FormLabel>
+                                            <p className="text-[10px] text-muted-foreground font-medium uppercase opacity-60">Send to all students.</p>
                                         </div></FormItem>
                                     )}/>
                                 )}

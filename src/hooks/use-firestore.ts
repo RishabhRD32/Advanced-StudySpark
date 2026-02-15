@@ -705,9 +705,10 @@ export function useTimetable(type?: TimetableType) {
               });
             }
         }
-    }, async (serverError) => {
+    }, async (serverError) => { 
       const permissionError = new FirestorePermissionError({ path: 'userTimetableSettings', operation: 'list' });
       errorEmitter.emit('permission-error', permissionError);
+      setIsLoadingSettings(false); 
     });
     return () => unsubscribe();
   }, [settingsQ, user, userProfile?.ccCode]);
@@ -886,9 +887,18 @@ export function useClassTimetable(ccCode?: string) {
 export function useChat(studentUid: string, teacherUid: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
-  const roomId = `${teacherUid}_${studentUid}`;
+  const roomId = useMemo(() => {
+    if (!studentUid || !teacherUid) return null;
+    return `${teacherUid}_${studentUid}`;
+  }, [studentUid, teacherUid]);
 
   useEffect(() => {
+    if (!roomId) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
+
     const q = query(
       collection(db, 'chats', roomId, 'messages')
     );
@@ -912,6 +922,7 @@ export function useChat(studentUid: string, teacherUid: string) {
   }, [roomId]);
 
   const sendMessage = async (text: string, senderUid: string, chatRoomData: Omit<ChatRoom, 'id' | 'updatedAt'>) => {
+    if (!roomId) return;
     const batch = writeBatch(db);
     const roomRef = doc(db, 'chats', roomId);
     const messageRef = doc(collection(db, 'chats', roomId, 'messages'));
@@ -959,7 +970,7 @@ export function useChatRooms(teacherUid: string) {
       list.sort((a, b) => {
         const timeA = a.updatedAt?.toMillis() || 0;
         const timeB = b.updatedAt?.toMillis() || 0;
-        return timeA - timeB;
+        return timeB - timeA;
       });
       setRooms(list);
       setLoading(false);

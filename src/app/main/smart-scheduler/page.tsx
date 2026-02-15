@@ -111,6 +111,10 @@ export default function SmartSchedulerPage() {
   const handleRemoveClass = (idx: number) => {
     const updated = config.classes.filter((_, i) => i !== idx);
     setConfig({ ...config, classes: updated });
+    // Fix: If removing current class, reset selection
+    if (selectedClassIdx >= updated.length) {
+      setSelectedClassIdx(Math.max(0, updated.length - 1));
+    }
   };
 
   const handleGenerate = () => {
@@ -187,7 +191,7 @@ export default function SmartSchedulerPage() {
         </div>
         <h1 className="text-5xl font-black tracking-tighter uppercase italic">Smart Scheduler</h1>
         <p className="text-xl text-muted-foreground font-bold opacity-80 max-w-2xl mx-auto leading-relaxed">
-          Algorithmic conflict-free planning with weekly lecture and lab quotas.
+          Plan class schedules without conflicts based on weekly needs.
         </p>
       </div>
 
@@ -320,7 +324,7 @@ export default function SmartSchedulerPage() {
             </div>
 
             <Button onClick={handleGenerate} className="w-full h-16 text-lg font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
-              <Zap className="mr-3 h-5 w-5 fill-white/20" /> Run Algorithmic Solver
+              <Zap className="mr-3 h-5 w-5 fill-white/20" /> Generate Schedule
             </Button>
           </CardContent>
         </Card>
@@ -339,7 +343,7 @@ export default function SmartSchedulerPage() {
                     </CardTitle>
                     <p className="text-sm font-bold text-muted-foreground uppercase opacity-60">
                       {viewMode === 'class' 
-                        ? `Viewing Class: ${config.classes[selectedClassIdx]?.name}-${config.classes[selectedClassIdx]?.division}`
+                        ? `Viewing Class: ${config.classes[selectedClassIdx]?.name || '?'}-${config.classes[selectedClassIdx]?.division || '?'}`
                         : 'Search faculty name to see their weekly workload'}
                     </p>
                   </div>
@@ -404,7 +408,8 @@ export default function SmartSchedulerPage() {
                           <TableRow key={time} className="h-28 border-none group transition-all">
                             <TableCell className="font-black text-[13px] tracking-tighter py-8 border-r-2 border-primary/5 bg-muted/5 pl-12 group-hover:text-primary transition-colors">{time}</TableCell>
                             {DAYS.map(day => {
-                              const entry = generatedEntries.find(e => e.day === day && e.startTime === time && e.className === config.classes[selectedClassIdx]?.name && e.division === config.classes[selectedClassIdx]?.division);
+                              const targetClass = config.classes[selectedClassIdx];
+                              const entry = targetClass ? generatedEntries.find(e => e.day === day && e.startTime === time && e.className === targetClass.name && e.division === targetClass.division) : null;
                               return (
                                 <TableCell key={day} className="p-3 align-middle border-r-2 border-primary/5 last:border-none">
                                   {entry ? (
@@ -488,7 +493,7 @@ export default function SmartSchedulerPage() {
             <div className="h-[400px] border-4 border-dashed rounded-[4rem] flex flex-col items-center justify-center text-center opacity-20 px-12 group hover:opacity-30 transition-all bg-muted/5">
                <CalendarRange className="h-24 w-24 mb-8" />
                <h3 className="text-4xl font-black uppercase tracking-widest">Ready to Solve</h3>
-               <p className="text-xl font-bold mt-2 max-w-md">Input your faculty inventory above. The system will calculate an optimal weekly workload across all classes.</p>
+               <p className="text-xl font-bold mt-2 max-w-md">Input your faculty assignments above. The system will calculate an optimal weekly schedule across all classes.</p>
             </div>
           )}
         </div>

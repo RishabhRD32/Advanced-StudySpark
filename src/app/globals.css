@@ -64,6 +64,27 @@
   @apply bg-card/40 backdrop-blur-xl border border-primary/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-primary/30 hover:scale-[1.01] hover:-translate-y-1 transition-all duration-500 rounded-[2rem] overflow-hidden;
 }
 
+.glass-action {
+  @apply bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl transition-all active:scale-95;
+}
+
+/* Mesh Gradient Background */
+.mesh-background {
+  background-color: hsla(210, 40%, 98%, 1);
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(221, 83%, 53%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(217, 91%, 59%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(221, 83%, 53%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(217, 91%, 59%, 0.1) 0px, transparent 50%);
+}
+
+.dark .mesh-background {
+  background-color: hsla(222, 84%, 4%, 1);
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(217, 91%, 59%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(221, 83%, 53%, 0.1) 0px, transparent 50%);
+}
+
 /* realistic lightning loader */
 @keyframes bolt-flicker {
   0%, 100% { 
@@ -110,6 +131,14 @@
 }
 .animate-pulse-glow { 
   animation: pulse-glow 2s infinite ease-in-out; 
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
 }
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }

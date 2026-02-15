@@ -58,21 +58,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  const validateTeacherCCCode = async (profession: string, ccCode?: string, currentUid?: string) => {
-    if (profession === 'teacher' && ccCode && ccCode.trim() !== '') {
-      const q = query(
-        collection(db, 'users'), 
-        where('profession', '==', 'teacher'), 
-        where('ccCode', '==', ccCode.toUpperCase().trim()),
-        limit(1)
-      );
-      const snap = await getDocs(q);
-      if (!snap.empty && snap.docs[0].id !== currentUid) {
-        throw new Error("This Class Code is already being used by another teacher. Please choose a unique code or contact support.");
-      }
-    }
-  };
-
   const login = async (email: string, pass: string) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, pass);
     router.push('/main/dashboard');
@@ -120,8 +105,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     ccCode?: string,
     division?: string
   ) => {
-    await validateTeacherCCCode(profession, ccCode);
-
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     const newUserProfile: UserProfile = {
       uid: userCredential.user.uid,
@@ -157,10 +140,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const updateUserProfile = async (updates: Partial<UserProfile>) => {
     if (!user) throw new Error("Not authenticated");
     
-    if (updates.ccCode || (userProfile?.profession === 'teacher' && updates.ccCode)) {
-      await validateTeacherCCCode(userProfile?.profession || 'student', updates.ccCode, user.uid);
-    }
-
     const userDocRef = doc(db, "users", user.uid);
     const cleanedUpdates = { ...updates };
     if (cleanedUpdates.ccCode) cleanedUpdates.ccCode = cleanedUpdates.ccCode.toUpperCase().trim();

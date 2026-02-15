@@ -24,7 +24,7 @@ const humanizerSchema = z.object({
   tone: z.enum(['friendly', 'professional', 'inspiring']),
 });
 
-export default function AIHumanizerPage() {
+export default function NaturalWriterPage() {
   const { userProfile } = useAuth();
   const [result, setResult] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -51,12 +51,12 @@ export default function AIHumanizerPage() {
           model: userProfile?.preferredCloudModel || 'gemini-1.5-flash'
         });
         setResult(res.humanizedText);
-        toast({ title: "Cloud Processing Complete", description: `Content humanized via ${userProfile?.preferredCloudProvider?.toUpperCase() || 'Cloud'}.` });
+        toast({ title: "Writing Ready", description: "Your content is now more natural." });
       } catch (error: any) {
         toast({ 
           variant: "destructive", 
           title: "Logic Error", 
-          description: error.message || "Try switching to Offline Mode for local logic." 
+          description: error.message || "Failed to process writing." 
         });
       } finally {
         setIsCloudLoading(false);
@@ -70,7 +70,7 @@ export default function AIHumanizerPage() {
         );
         if (response) {
           setResult(response);
-          toast({ title: "Neural Link Complete", description: "Content humanized locally." });
+          toast({ title: "Local Writing Done", description: "Content simplified locally." });
         }
       } catch (error) { 
         toast({ variant: "destructive", title: "Error", description: "Failed to rewrite content locally." });
@@ -95,8 +95,8 @@ export default function AIHumanizerPage() {
         <div className="h-12 w-12 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <Languages className="h-6 w-6 text-primary" />
         </div>
-        <h1 className="text-4xl font-black tracking-tight">AI Humanizer</h1>
-        <p className="text-muted-foreground font-medium">Make content sound natural and engaging via Cloud or Locally.</p>
+        <h1 className="text-4xl font-black tracking-tight">Natural Writer</h1>
+        <p className="text-muted-foreground font-medium">Make robotic text sound natural and easy to read.</p>
       </div>
 
       <Card className="border-2 shadow-sm bg-card/50 backdrop-blur-xl rounded-[2rem]">
@@ -123,7 +123,7 @@ export default function AIHumanizerPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField control={form.control} name="tone" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs font-black uppercase tracking-widest text-primary">Target Tone</FormLabel>
+                    <FormLabel className="text-xs font-black uppercase tracking-widest text-primary">Writing Tone</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-12 border-2 font-bold rounded-xl">
@@ -142,7 +142,7 @@ export default function AIHumanizerPage() {
                 <div className="flex items-end">
                   <Button type="submit" disabled={isLoading} className="w-full h-12 text-lg font-black uppercase tracking-widest rounded-xl">
                     {isGenerating ? (
-                      <><Activity className="mr-2 animate-pulse" /> {isCloudMode ? 'Cloud Syncing...' : 'Neural Humanizing...'}</>
+                      <><Activity className="mr-2 animate-pulse" /> Re-writing...</>
                     ) : (
                       <><Sparkles className="mr-2 h-5 w-5" /> Start Transformation</>
                     )}
@@ -160,7 +160,7 @@ export default function AIHumanizerPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Cpu className="h-4 w-4 animate-spin text-primary" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Syncing Local Model...</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Starting Local AI...</span>
               </div>
               <span className="text-[10px] font-bold">{progress.includes('%') ? progress : 'Loading'}</span>
             </div>
@@ -175,7 +175,7 @@ export default function AIHumanizerPage() {
             <div className="flex items-center gap-2">
               {isCloudMode ? <Globe className="h-4 w-4 text-primary" /> : <Cpu className="h-4 w-4 text-primary" />}
               <CardTitle className="text-xs font-black uppercase tracking-widest text-primary">
-                {isCloudMode ? 'Cloud Humanized' : 'Local Humanized'}
+                Result
               </CardTitle>
             </div>
             {result && (
@@ -190,8 +190,7 @@ export default function AIHumanizerPage() {
                 <div className="flex flex-col items-center justify-center py-6 space-y-4">
                   <Brain className="h-12 w-12 text-primary animate-pulse" />
                   <div className="text-center">
-                    <p className="text-sm font-black uppercase tracking-widest text-primary">Refining Natural Tone</p>
-                    <p className="text-[9px] font-bold text-muted-foreground uppercase">Formulating engaging structure...</p>
+                    <p className="text-sm font-black uppercase tracking-widest text-primary">Refining Text</p>
                   </div>
                 </div>
                 <div className="space-y-3">
