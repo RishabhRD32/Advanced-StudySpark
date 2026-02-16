@@ -24,7 +24,7 @@ export function Hero() {
           <Zap className="h-4 w-4 fill-primary animate-bolt" />
           The Easiest Way to Study
         </div>
-        
+        <meta name="google-site-verification" content="QdbGJR8rn3lTcpfBEXwMS2tbvhujJNrXUsq36gmB75g" />
         <div className="space-y-6">
           <h1 className="text-6xl md:text-8xl lg:text-9xl font-black leading-[0.9] tracking-tighter text-foreground italic">
             Study <span className="text-primary not-italic">Smarter</span>,<br /> 
