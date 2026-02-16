@@ -17,6 +17,11 @@ export default {
       },
     },
     extend: {
+      // 👇 ADD THIS SECTION HERE
+      transitionDuration: {
+        '2000': '2000ms',
+      },
+      // -----------------------
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
         headline: ['"Plus Jakarta Sans"', 'sans-serif'],
