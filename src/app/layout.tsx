@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import AuthProvider from '@/lib/auth/auth-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseErrorListener } from '@/components/firebase-error-listener';
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: 'StudySpark - Modern Academic Hub',
@@ -393,6 +394,7 @@ export default function RootLayout({
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
