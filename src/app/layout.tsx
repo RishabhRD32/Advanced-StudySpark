@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     'academic hub',
     'student learning portal',
     'e-learning website',
-    'digital education platform'
+    'digital education platform',
     'study resources online',
   'university study materials',
   'competitive exam preparation',
